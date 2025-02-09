@@ -11,6 +11,7 @@ import {
   DialogTitle,
   DialogDescription,
 } from "./ui/dialog";
+import { Project } from "@/lib/types/project";
 
 interface ProjectFormData {
   title: string;
@@ -41,7 +42,6 @@ export default function CreateProjectModal({
     e.preventDefault();
 
     try {
-      // Validate form data
       if (
         !formData.title ||
         !formData.description ||
@@ -50,12 +50,18 @@ export default function CreateProjectModal({
         throw new Error("Please fill in all required fields");
       }
 
-      // Create project object
-      const newProject = {
+      const newProject: Project = {
         ...formData,
-        raised: 0, // Start with 0 USD raised
-        goal: formData.estimatedFunding,
-        daysLeft: 30, // Default to 30 days
+        id: crypto.randomUUID(),
+        fundsCollected: 0,
+        contributors: 0,
+        createdAt: new Date(),
+        endDate: null,
+        isFunded: false,
+        isCompleted: false,
+        isFinalized: false,
+        muralsSubmitted: 0,
+        votesCast: 0,
       };
 
       // Store in localStorage
@@ -67,10 +73,7 @@ export default function CreateProjectModal({
         JSON.stringify([...existingProjects, newProject])
       );
 
-      // Show success message
       alert("Project created successfully!");
-
-      // Reset form and close modal
       setFormData({
         title: "",
         description: "",

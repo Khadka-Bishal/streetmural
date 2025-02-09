@@ -16,36 +16,6 @@ import CreateProjectForm from "@/components/CreateProjectForm";
 import CreateProjectModal from "@/components/CreateProjectModal";
 import { useState } from "react";
 
-const featuredProjects = [
-  {
-    title: "Downtown Revival",
-    artist: "NeonDreams",
-    image:
-      "https://images.unsplash.com/photo-1551963831-b3b1ca40c98e?auto=format&fit=crop&q=80",
-    raised: 1.8,
-    goal: 3.0,
-    daysLeft: 12,
-  },
-  {
-    title: "Urban Stories",
-    artist: "StreetCanvas",
-    image:
-      "https://images.unsplash.com/photo-1571757767119-68b8dbed8c97?auto=format&fit=crop&q=80",
-    raised: 2.2,
-    goal: 4.0,
-    daysLeft: 8,
-  },
-  {
-    title: "Digital Roots",
-    artist: "CryptoArtist",
-    image:
-      "https://images.unsplash.com/photo-1550745165-9bc0b252726f?auto=format&fit=crop&q=80",
-    raised: 0.9,
-    goal: 2.5,
-    daysLeft: 20,
-  },
-];
-
 export default function Home() {
   const [isModalOpen, setIsModalOpen] = useState(false);
 
@@ -167,15 +137,9 @@ export default function Home() {
                 <h3 className="text-xl font-semibold mb-4 text-white">
                   For Artists
                 </h3>
-                <p className="text-white/70 mb-6">
+                <p className="text-white/70">
                   Submit your mural proposals and connect with supporters
                 </p>
-                <Button
-                  variant="outline"
-                  className="border-purple-500 text-purple-400 hover:bg-purple-500/20"
-                >
-                  Start Creating
-                </Button>
               </div>
             </div>
             <div className="relative group">
@@ -184,15 +148,9 @@ export default function Home() {
                 <h3 className="text-xl font-semibold mb-4 text-white">
                   For Communities
                 </h3>
-                <p className="text-white/70 mb-6">
+                <p className="text-white/70">
                   Propose spaces and support local art initiatives
                 </p>
-                <Button
-                  variant="outline"
-                  className="border-purple-500 text-purple-400 hover:bg-purple-500/20"
-                >
-                  Get Started
-                </Button>
               </div>
             </div>
             <div className="relative group">
@@ -201,29 +159,14 @@ export default function Home() {
                 <h3 className="text-xl font-semibold mb-4 text-white">
                   For Supporters
                 </h3>
-                <p className="text-white/70 mb-6">
+                <p className="text-white/70">
                   Fund projects and help transform urban spaces
                 </p>
-                <Button
-                  variant="outline"
-                  className="border-purple-500 text-purple-400 hover:bg-purple-500/20"
-                >
-                  Start Funding
-                </Button>
               </div>
             </div>
           </div>
         </div>
       </section>
-
-      <main className="min-h-screen py-24 px-4">
-        <div className="max-w-7xl mx-auto">
-          <h1 className="text-3xl md:text-5xl font-bold text-center mb-16 bg-gradient-to-r from-purple-400 to-pink-600 text-transparent bg-clip-text">
-            Create New Project
-          </h1>
-          <CreateProjectForm />
-        </div>
-      </main>
 
       <CreateProjectModal
         isOpen={isModalOpen}

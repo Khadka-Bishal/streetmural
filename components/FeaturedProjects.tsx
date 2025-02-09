@@ -2,16 +2,7 @@
 
 import ProjectCard from "./ProjectCard";
 import { useEffect, useState } from "react";
-
-interface Project {
-  title: string;
-  description: string;
-  location: string;
-  image: string;
-  raised: number;
-  goal: number;
-  daysLeft: number;
-}
+import { Project } from "@/lib/types/project";
 
 export default function FeaturedProjects() {
   const [featuredProjects, setFeaturedProjects] = useState<Project[]>([]);
@@ -28,17 +19,11 @@ export default function FeaturedProjects() {
           localStorage.getItem("projects") || "[]"
         );
 
-        // Transform projects to ensure they have all required fields
+        // Transform dates back to Date objects
         const transformedProjects = storedProjects.map((project: any) => ({
-          title: project.title,
-          description: project.description,
-          location: project.location,
-          image:
-            project.image ||
-            "https://images.unsplash.com/photo-1561059488-916d69792237",
-          raised: project.raised || 0,
-          goal: project.goal || project.estimatedFunding,
-          daysLeft: project.daysLeft || 30,
+          ...project,
+          createdAt: new Date(project.createdAt),
+          endDate: project.endDate ? new Date(project.endDate) : null,
         }));
 
         setFeaturedProjects(transformedProjects);

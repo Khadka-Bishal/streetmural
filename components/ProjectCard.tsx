@@ -2,33 +2,37 @@ import { Card } from "./ui/card";
 import { Progress } from "./ui/progress";
 import { Button } from "./ui/button";
 import Image from "next/image";
+import { useRouter } from "next/navigation";
+import { Project } from "@/lib/types/project";
 
-interface ProjectCardProps {
+type ProjectCardProps = Partial<Project> & {
+  className?: string;
   title: string;
   description: string;
   location: string;
   image: string;
-  raised: number;
-  goal: number;
-  daysLeft: number;
-  className?: string;
-}
+  estimatedFunding: number;
+};
 
 export default function ProjectCard({
+  id,
   title,
   description,
   location,
   image,
-  raised,
-  goal,
-  daysLeft,
+  estimatedFunding,
+  fundsCollected = 0,
+  contributors = 0,
+  isFunded = false,
   className = "",
 }: ProjectCardProps) {
-  const progress = (raised / goal) * 100;
+  const router = useRouter();
+  const progress = ((fundsCollected || 0) / estimatedFunding) * 100;
 
   return (
     <div
-      className={`bg-black/20 rounded-lg overflow-hidden border border-purple-500/20 ${className}`}
+      onClick={() => router.push(`/project/${id}`)}
+      className={`bg-black/20 rounded-lg overflow-hidden border border-purple-500/20 cursor-pointer ${className}`}
     >
       <div className="relative h-48">
         <img src={image} alt={title} className="w-full h-full object-cover" />
@@ -46,7 +50,9 @@ export default function ProjectCard({
         <div className="space-y-3">
           <div className="flex justify-between text-sm">
             <span className="text-gray-400">Raised</span>
-            <span className="text-white">{raised} ETH</span>
+            <span className="text-white">
+              ${fundsCollected.toLocaleString()}
+            </span>
           </div>
           <div className="w-full bg-gray-700 rounded-full h-2">
             <div
@@ -55,8 +61,10 @@ export default function ProjectCard({
             />
           </div>
           <div className="flex justify-between text-sm">
-            <span className="text-gray-400">Goal: {goal} ETH</span>
-            <span className="text-gray-400">{daysLeft} days left</span>
+            <span className="text-gray-400">
+              Goal: ${estimatedFunding.toLocaleString()}
+            </span>
+            <span className="text-gray-400">{contributors} contributors</span>
           </div>
         </div>
       </div>
