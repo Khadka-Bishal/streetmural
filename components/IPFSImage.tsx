@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState, useEffect } from "react";
 import Image from "next/image";
 
 interface IPFSImageProps {
@@ -9,61 +9,55 @@ interface IPFSImageProps {
   className?: string;
 }
 
-export default function IPFSImage({
-  ipfsHash,
-  alt,
-  className,
-}: IPFSImageProps) {
+const IPFS_GATEWAYS = [
+  "https://gateway.pinata.cloud/ipfs/",
+  "https://ipfs.io/ipfs/",
+  "https://cloudflare-ipfs.com/ipfs/"
+];
+
+export default function IPFSImage({ ipfsHash, alt, className }: IPFSImageProps) {
   const [imageUrl, setImageUrl] = useState<string>("");
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(false);
+  const [currentGateway, setCurrentGateway] = useState(0);
 
   useEffect(() => {
-    const fetchIPFSImage = async () => {
+    const loadImage = async () => {
       try {
-        const response = await fetch(`/api/ipfs-handler?hash=${ipfsHash}`);
-        const data = await response.json();
-
-        if (data.error) {
-          throw new Error(data.error);
+        const url = `${IPFS_GATEWAYS[currentGateway]}${ipfsHash}`;
+        const response = await fetch(url);
+        if (response.ok) {
+          setImageUrl(url);
+          // Cache the working gateway for this hash
+          localStorage.setItem(`gateway_${ipfsHash}`, IPFS_GATEWAYS[currentGateway]);
+        } else {
+          // Try next gateway
+          setCurrentGateway((prev) => (prev + 1) % IPFS_GATEWAYS.length);
         }
-
-        setImageUrl(data.imageUrl);
-        setLoading(false);
-      } catch (err) {
-        console.error("Error loading IPFS image:", err);
-        setError(true);
-        setLoading(false);
+      } catch (error) {
+        // Try next gateway on error
+        setCurrentGateway((prev) => (prev + 1) % IPFS_GATEWAYS.length);
       }
     };
 
-    if (ipfsHash) {
-      fetchIPFSImage();
+    if (ipfsHash && !imageUrl) {
+      // Check cache first
+      const cachedGateway = localStorage.getItem(`gateway_${ipfsHash}`);
+      if (cachedGateway) {
+        setImageUrl(`${cachedGateway}${ipfsHash}`);
+      } else {
+        loadImage();
+      }
     }
-  }, [ipfsHash]);
+  }, [ipfsHash, currentGateway]);
 
-  if (loading) {
-    return <div className={`animate-pulse bg-gray-800 ${className}`} />;
-  }
-
-  if (error) {
-    return (
-      <div
-        className={`bg-gray-900 flex items-center justify-center ${className}`}
-      >
-        Failed to load image
-      </div>
-    );
+  if (!imageUrl) {
+    return <div className={`animate-pulse bg-gray-700 ${className}`} />;
   }
 
   return (
-    <div className={`relative ${className}`}>
-      <img
-        src={imageUrl}
-        alt={alt}
-        className="w-full h-full object-cover"
-        onError={() => setError(true)}
-      />
-    </div>
+    <img
+      src={imageUrl}
+      alt={alt}
+      className={className}
+    />
   );
 }

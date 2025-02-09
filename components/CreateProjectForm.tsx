@@ -4,6 +4,9 @@ import { useState } from "react";
 import { Button } from "./ui/button";
 import { Input } from "./ui/input";
 import { Textarea } from "./ui/textarea";
+import { getMuralDAOContract } from '@/lib/contract';
+import { ethers } from 'ethers';
+import { toast } from "@/components/ui/use-toast";
 
 interface ProjectFormData {
   title: string;
@@ -11,6 +14,7 @@ interface ProjectFormData {
   location: string;
   goal: number;
   fundingDuration: number; // in days
+  estimatedFunding: number; // in ETH
 }
 
 export default function CreateProjectForm() {
@@ -20,39 +24,54 @@ export default function CreateProjectForm() {
     location: "",
     goal: 0,
     fundingDuration: 30,
+    estimatedFunding: 0,
   });
+
+  const [loading, setLoading] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setLoading(true);
 
-    // Create project object
-    const newProject = {
-      ...formData,
-      raised: 0, // Start with 0 ETH raised
-      daysLeft: formData.fundingDuration,
-      image: "https://images.unsplash.com/photo-1561059488-916d69792237", // Placeholder image
-    };
+    try {
+      const contract = await getMuralDAOContract();
+      
+      // Create project on-chain
+      const tx = await contract.createProject(
+        formData.title,
+        formData.description,
+        formData.location,
+        ethers.parseEther(formData.estimatedFunding.toString())
+      );
 
-    // Store in localStorage
-    const existingProjects = JSON.parse(
-      localStorage.getItem("projects") || "[]"
-    );
-    localStorage.setItem(
-      "projects",
-      JSON.stringify([...existingProjects, newProject])
-    );
+      // Wait for transaction
+      await tx.wait();
+      
+      toast({
+        title: "Project Created",
+        description: "Your project has been created on the blockchain",
+      });
 
-    // Reset form
-    setFormData({
-      title: "",
-      description: "",
-      location: "",
-      goal: 0,
-      fundingDuration: 30,
-    });
+      // Reset form
+      setFormData({
+        title: "",
+        description: "",
+        location: "",
+        goal: 0,
+        fundingDuration: 30,
+        estimatedFunding: 0,
+      });
 
-    // You could add a success message or redirect here
-    alert("Project created successfully!");
+      onSuccess();
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "Failed to create project",
+        variant: "destructive",
+      });
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -111,7 +130,7 @@ export default function CreateProjectForm() {
         />
       </div>
 
-      <Button type="submit" className="w-full">
+      <Button type="submit" className="w-full" disabled={loading}>
         Create Project
       </Button>
     </form>

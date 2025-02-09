@@ -9,6 +9,8 @@ import { Project } from "@/lib/types/project";
 import { useRouter } from "next/navigation";
 import ContributionSection from "@/components/ContributionSection";
 import MuralSubmission from "@/components/MuralSubmission";
+import IPFSImage from "@/components/IPFSImage";
+import { getMuralDAOContract } from '@/lib/contract';
 
 interface Mural {
   id: string;
@@ -16,6 +18,8 @@ interface Mural {
   artist: string;
   votes: number;
   timestamp: Date;
+  ipfsHash: string;
+  description?: string;
 }
 
 export default function ProjectPage({ params }: { params: { id: string } }) {
@@ -26,50 +30,39 @@ export default function ProjectPage({ params }: { params: { id: string } }) {
   const [loading, setLoading] = useState(true);
   const [walletAddress, setWalletAddress] = useState<string | null>(null);
 
+  const fetchProjectDetails = async () => {
+    try {
+      const contract = await getMuralDAOContract();
+      
+      // Fetch project details
+      const projectData = await contract.projects(params.id);
+      setProject({
+        id: projectData.id.toString(),
+        title: projectData.title,
+        description: projectData.description,
+        location: projectData.location,
+        estimatedFunding: projectData.estimatedFunding,
+        fundsCollected: projectData.fundsCollected,
+        contributors: projectData.contributors,
+        muralsSubmitted: projectData.muralsSubmitted,
+        totalVotes: projectData.totalVotes,
+        creator: projectData.creator
+      });
+
+      // Fetch murals
+      const muralData = await contract.getMurals(params.id);
+      setMurals(muralData);
+      
+      setLoading(false);
+    } catch (error) {
+      console.error("Error fetching project:", error);
+      setLoading(false);
+    }
+  };
+
   useEffect(() => {
-    const fetchProjectDetails = async () => {
-      try {
-        const projects = JSON.parse(localStorage.getItem("projects") || "[]");
-        const projectData = projects.find((p: any) => p.id === params.id);
-        
-        if (!projectData) {
-          router.push("/projects"); // Redirect if project not found
-          return;
-        }
-
-        setProject({
-          ...projectData,
-          fundsCollected: projectData.fundsCollected || 0,
-          contributors: projectData.contributors || 0,
-          muralsSubmitted: projectData.muralsSubmitted || 0,
-          votesCast: projectData.votesCast || 0,
-          isFunded: projectData.isFunded || false,
-          isCompleted: projectData.isCompleted || false,
-          isFinalized: projectData.isFinalized || false,
-          createdAt: new Date(projectData.createdAt),
-          endDate: projectData.endDate ? new Date(projectData.endDate) : null
-        });
-
-        // Mock murals data
-        setMurals([
-          {
-            id: "1",
-            imageUrl: "https://images.unsplash.com/photo-1561059488-916d69792237",
-            artist: "Artist 1",
-            votes: 12,
-            timestamp: new Date()
-          }
-        ]);
-        
-        setLoading(false);
-      } catch (error) {
-        console.error("Error fetching project:", error);
-        setLoading(false);
-      }
-    };
-
     fetchProjectDetails();
-  }, [params.id, router]);
+  }, [params.id]);
 
   const handleContributionSuccess = (amountUsd: number) => {
     if (!project) return;
@@ -178,15 +171,18 @@ export default function ProjectPage({ params }: { params: { id: string } }) {
                     key={mural.id}
                     className="relative group rounded-lg overflow-hidden"
                   >
-                    <img
-                      src={mural.imageUrl}
-                      alt="Mural submission"
+                    <IPFSImage
+                      ipfsHash={mural.ipfsHash}
+                      alt={`Mural by ${mural.artist}`}
                       className="w-full h-48 object-cover"
                     />
                     <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent opacity-0 group-hover:opacity-100 transition-opacity">
                       <div className="absolute bottom-4 left-4">
                         <p className="text-white">{mural.artist}</p>
                         <p className="text-gray-300">{mural.votes} votes</p>
+                        {mural.description && (
+                          <p className="text-sm text-gray-400 mt-1">{mural.description}</p>
+                        )}
                       </div>
                     </div>
                   </div>
@@ -208,7 +204,7 @@ export default function ProjectPage({ params }: { params: { id: string } }) {
             {/* Submit Mural Section */}
             <MuralSubmission
               projectId={project.id}
-              onSubmissionSuccess={handleMuralSubmissionSuccess}
+              onSubmissionSuccess={fetchProjectDetails}
             />
           </div>
         </div>

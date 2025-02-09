@@ -1,3 +1,5 @@
+import { Toaster } from "@/components/ui/toaster";
+
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
 
