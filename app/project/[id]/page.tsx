@@ -10,7 +10,6 @@ import { useRouter } from "next/navigation";
 import ContributionSection from "@/components/ContributionSection";
 import MuralSubmission from "@/components/MuralSubmission";
 import IPFSImage from "@/components/IPFSImage";
-import { getMuralDAOContract } from '@/lib/contract';
 
 interface Mural {
   id: string;
@@ -32,26 +31,19 @@ export default function ProjectPage({ params }: { params: { id: string } }) {
 
   const fetchProjectDetails = async () => {
     try {
-      const contract = await getMuralDAOContract();
+      const projects = JSON.parse(localStorage.getItem("projects") || "[]");
+      const projectData = projects.find((p: any) => p.id === params.id);
       
-      // Fetch project details
-      const projectData = await contract.projects(params.id);
-      setProject({
-        id: projectData.id.toString(),
-        title: projectData.title,
-        description: projectData.description,
-        location: projectData.location,
-        estimatedFunding: projectData.estimatedFunding,
-        fundsCollected: projectData.fundsCollected,
-        contributors: projectData.contributors,
-        muralsSubmitted: projectData.muralsSubmitted,
-        totalVotes: projectData.totalVotes,
-        creator: projectData.creator
-      });
+      if (!projectData) {
+        router.push("/projects");
+        return;
+      }
 
-      // Fetch murals
-      const muralData = await contract.getMurals(params.id);
-      setMurals(muralData);
+      setProject(projectData);
+
+      // Fetch murals for this project
+      const projectMurals = JSON.parse(localStorage.getItem(`murals_${params.id}`) || "[]");
+      setMurals(projectMurals);
       
       setLoading(false);
     } catch (error) {

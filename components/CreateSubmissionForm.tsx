@@ -7,7 +7,6 @@ import { Textarea } from "./ui/textarea";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "./ui/dialog";
 import { Image as ImageIcon, Loader2 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
-import { getMuralDAOContract } from '@/lib/contract';
 
 interface CreateSubmissionFormProps {
   projectId: string;
@@ -36,7 +35,6 @@ export default function CreateSubmissionForm({
   const [loading, setLoading] = useState(false);
   const { toast } = useToast();
 
-  // Reset form when dialog closes
   const handleClose = () => {
     setFormData({
       artistName: "",
@@ -73,32 +71,60 @@ export default function CreateSubmissionForm({
     e.preventDefault();
     setLoading(true);
 
-    const toastId = toast({
+    // Show initial toast
+    toast({
       title: "Uploading...",
       description: "Preparing your artwork",
       variant: "default",
-      duration: 100000,
+      duration: 2000,
     });
 
     try {
-      // 1. Upload to IPFS first
       const ipfsHash = await uploadToIPFS(previewUrl);
-      
-      // 2. Submit to blockchain
-      const contract = await getMuralDAOContract();
-      const tx = await contract.submitMural(
-        projectId,
-        ipfsHash,
-        formData.description
+      const ipfsUrl = `https://gateway.pinata.cloud/ipfs/${ipfsHash}`;
+
+      // Store in localStorage
+      const murals = JSON.parse(
+        localStorage.getItem(`murals_${projectId}`) || "[]"
+      );
+      const newMural = {
+        id: crypto.randomUUID(),
+        imageUrl: ipfsUrl,
+        ipfsHash: ipfsHash,
+        artist: formData.artistName,
+        description: formData.description,
+        votes: 0,
+        timestamp: new Date(),
+      };
+
+      localStorage.setItem(
+        `murals_${projectId}`,
+        JSON.stringify([...murals, newMural])
       );
 
-      await tx.wait();
+      // Update project count
+      const projects = JSON.parse(localStorage.getItem("projects") || "[]");
+      const updatedProjects = projects.map((p: any) => {
+        if (p.id === projectId) {
+          return {
+            ...p,
+            muralsSubmitted: (p.muralsSubmitted || 0) + 1,
+          };
+        }
+        return p;
+      });
+      localStorage.setItem("projects", JSON.stringify(updatedProjects));
 
-      toast.dismiss(toastId);
       onSubmissionSuccess();
       handleClose();
     } catch {
-      toast.dismiss(toastId);
+      // Show error toast
+      toast({
+        title: "Upload Failed",
+        description: "Please try again",
+        variant: "destructive",
+        duration: 2000,
+      });
       handleClose();
     } finally {
       setLoading(false);
