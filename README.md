@@ -25,12 +25,6 @@ This project embraces the principles of Web3 by:
 - **Transparency**: The voting system is transparent, allowing users to see how many votes each mural has received, fostering trust within the community.
 - **Ownership**: Artists maintain ownership of their work, and the platform does not take a cut of their earnings or exposure, unlike traditional galleries.
 
-### Technologies Used
-
-- **React**: For building the user interface.
-- **Next.js**: For server-side rendering and routing.
-- **IPFS**: For decentralized storage of images.
-- **Local Storage**: For temporarily storing mural data and votes.
 
 ## Getting Started
 
@@ -39,20 +33,19 @@ To get started with the Mural Gallery project, follow these steps:
 1. **Clone the Repository**:
 
    ```bash
-   git clone https://github.com/yourusername/mural-gallery.git
-   cd mural-gallery
+   git clone https://github.com/BishalKhadka/streetmural.git
    ```
 
 2. **Install Dependencies**:
 
    ```bash
-   npm install
+   yarn install
    ```
 
 3. **Run the Development Server**:
 
    ```bash
-   npm run dev
+   yarn dev
    ```
 
 4. **Open in Browser**: Navigate to `http://localhost:3000` to view the application.
