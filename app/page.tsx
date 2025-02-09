@@ -12,6 +12,9 @@ import {
   Building,
 } from "lucide-react";
 import FeaturedProjects from "@/components/FeaturedProjects";
+import CreateProjectForm from "@/components/CreateProjectForm";
+import CreateProjectModal from "@/components/CreateProjectModal";
+import { useState } from "react";
 
 const featuredProjects = [
   {
@@ -44,6 +47,8 @@ const featuredProjects = [
 ];
 
 export default function Home() {
+  const [isModalOpen, setIsModalOpen] = useState(false);
+
   return (
     <div className="min-h-screen bg-[#0a0b0f]">
       <Navbar />
@@ -86,6 +91,7 @@ export default function Home() {
               size="lg"
               variant="outline"
               className="border-purple-500 text-purple-400 hover:bg-purple-500/20"
+              onClick={() => setIsModalOpen(true)}
             >
               <Rocket className="mr-2 h-5 w-5" />
               Launch a Project
@@ -209,6 +215,20 @@ export default function Home() {
           </div>
         </div>
       </section>
+
+      <main className="min-h-screen py-24 px-4">
+        <div className="max-w-7xl mx-auto">
+          <h1 className="text-3xl md:text-5xl font-bold text-center mb-16 bg-gradient-to-r from-purple-400 to-pink-600 text-transparent bg-clip-text">
+            Create New Project
+          </h1>
+          <CreateProjectForm />
+        </div>
+      </main>
+
+      <CreateProjectModal
+        isOpen={isModalOpen}
+        onClose={() => setIsModalOpen(false)}
+      />
     </div>
   );
 }
