@@ -1,7 +1,7 @@
-import { Card } from './ui/card';
-import { Progress } from './ui/progress';
-import { Button } from './ui/button';
-import Image from 'next/image';
+import { Card } from "./ui/card";
+import { Progress } from "./ui/progress";
+import { Button } from "./ui/button";
+import Image from "next/image";
 
 interface ProjectCardProps {
   title: string;
@@ -10,6 +10,9 @@ interface ProjectCardProps {
   raised: number;
   goal: number;
   daysLeft: number;
+  description: string;
+  location: string;
+  className?: string;
 }
 
 export default function ProjectCard({
@@ -19,41 +22,47 @@ export default function ProjectCard({
   raised,
   goal,
   daysLeft,
+  description,
+  location,
+  className = "",
 }: ProjectCardProps) {
   const progress = (raised / goal) * 100;
 
   return (
-    <Card className="overflow-hidden transition-all duration-300 hover:shadow-lg hover:shadow-purple-500/20 border border-accent/20">
+    <div
+      className={`bg-black/20 rounded-lg overflow-hidden border border-purple-500/20 ${className}`}
+    >
       <div className="relative h-48">
-        <Image
-          src={image}
-          alt={title}
-          fill
-          className="object-cover"
-        />
+        <img src={image} alt={title} className="w-full h-full object-cover" />
+        <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
+        <div className="absolute bottom-4 left-4">
+          <p className="text-sm text-gray-300">{location}</p>
+        </div>
       </div>
-      <div className="p-4">
-        <h3 className="text-lg font-semibold mb-1">{title}</h3>
-        <p className="text-sm text-muted-foreground mb-4">by {artist}</p>
-        
-        <div className="mb-4">
-          <div className="flex justify-between text-sm mb-2">
-            <span>{raised} ETH raised</span>
-            <span>{goal} ETH goal</span>
+      <div className="p-5">
+        <h3 className="text-xl font-semibold mb-2 bg-gradient-to-r from-purple-400 to-pink-600 text-transparent bg-clip-text">
+          {title}
+        </h3>
+        <p className="text-sm text-gray-400 mb-4">by {artist}</p>
+        <p className="text-sm text-gray-300 mb-4 line-clamp-2">{description}</p>
+
+        <div className="space-y-3">
+          <div className="flex justify-between text-sm">
+            <span className="text-gray-400">Raised</span>
+            <span className="text-white">{raised} ETH</span>
           </div>
-          <Progress value={progress} className="h-2" />
-        </div>
-        
-        <div className="flex justify-between items-center">
-          <span className="text-sm text-muted-foreground">{daysLeft} days left</span>
-          <Button 
-            variant="outline"
-            className="border-purple-500 hover:bg-purple-500/20"
-          >
-            View Project
-          </Button>
+          <div className="w-full bg-gray-700 rounded-full h-2">
+            <div
+              className="bg-gradient-to-r from-purple-500 to-pink-600 h-2 rounded-full"
+              style={{ width: `${progress}%` }}
+            />
+          </div>
+          <div className="flex justify-between text-sm">
+            <span className="text-gray-400">Goal: {goal} ETH</span>
+            <span className="text-gray-400">{daysLeft} days left</span>
+          </div>
         </div>
       </div>
-    </Card>
+    </div>
   );
 }
