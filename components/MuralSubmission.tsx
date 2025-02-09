@@ -6,6 +6,7 @@ import { Input } from "./ui/input";
 import { Upload, Image as ImageIcon, Loader2 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import CreateSubmissionForm from "./CreateSubmissionForm";
+import { getMuralDAOContract } from "@/lib/ethers";
 
 interface MuralSubmissionProps {
   projectId: string;
@@ -20,6 +21,7 @@ export default function MuralSubmission({
   const [previewUrl, setPreviewUrl] = useState<string>("");
   const [isFormOpen, setIsFormOpen] = useState(false);
   const { toast } = useToast();
+  const [loading, setLoading] = useState(false);
 
   const handleFileSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
@@ -29,6 +31,40 @@ export default function MuralSubmission({
       setPreviewUrl(url);
       setIsFormOpen(true);
     }
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setLoading(true);
+
+    try {
+      const ipfsHash = await uploadToIPFS(previewUrl);
+      const contract = await getMuralDAOContract();
+      const tx = await contract.submitMural(
+        projectId,
+        ipfsHash,
+        formData.description
+      );
+
+      await tx.wait();
+      onSubmissionSuccess();
+      handleClose();
+    } catch (error) {
+      toast({
+        title: "Submission Failed",
+        description: "Please try again",
+        variant: "destructive",
+      });
+      handleClose();
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleClose = () => {
+    setIsFormOpen(false);
+    setSelectedFile(null);
+    setPreviewUrl("");
   };
 
   return (
@@ -76,14 +112,12 @@ export default function MuralSubmission({
       <CreateSubmissionForm
         projectId={projectId}
         isOpen={isFormOpen}
-        onClose={() => {
-          setIsFormOpen(false);
-          setSelectedFile(null);
-          setPreviewUrl("");
-        }}
+        onClose={handleClose}
         onSubmissionSuccess={onSubmissionSuccess}
         previewUrl={previewUrl}
+        loading={loading}
+        onSubmit={handleSubmit}
       />
     </div>
   );
-} 
+}

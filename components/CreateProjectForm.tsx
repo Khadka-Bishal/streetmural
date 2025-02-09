@@ -4,16 +4,14 @@ import { useState } from "react";
 import { Button } from "./ui/button";
 import { Input } from "./ui/input";
 import { Textarea } from "./ui/textarea";
-import { getMuralDAOContract } from '@/lib/contract';
-import { ethers } from 'ethers';
+import { getMuralDAOContract } from "@/lib/ethers";
+import { ethers } from "ethers";
 import { toast } from "@/components/ui/use-toast";
 
 interface ProjectFormData {
   title: string;
   description: string;
   location: string;
-  goal: number;
-  fundingDuration: number; // in days
   estimatedFunding: number; // in ETH
 }
 
@@ -22,8 +20,6 @@ export default function CreateProjectForm() {
     title: "",
     description: "",
     location: "",
-    goal: 0,
-    fundingDuration: 30,
     estimatedFunding: 0,
   });
 
@@ -35,7 +31,7 @@ export default function CreateProjectForm() {
 
     try {
       const contract = await getMuralDAOContract();
-      
+
       // Create project on-chain
       const tx = await contract.createProject(
         formData.title,
@@ -46,7 +42,7 @@ export default function CreateProjectForm() {
 
       // Wait for transaction
       await tx.wait();
-      
+
       toast({
         title: "Project Created",
         description: "Your project has been created on the blockchain",
@@ -57,12 +53,8 @@ export default function CreateProjectForm() {
         title: "",
         description: "",
         location: "",
-        goal: 0,
-        fundingDuration: 30,
         estimatedFunding: 0,
       });
-
-      onSuccess();
     } catch (error) {
       toast({
         title: "Error",
@@ -122,9 +114,12 @@ export default function CreateProjectForm() {
           type="number"
           step="0.1"
           min="0"
-          value={formData.goal}
+          value={formData.estimatedFunding}
           onChange={(e) =>
-            setFormData({ ...formData, goal: parseFloat(e.target.value) })
+            setFormData({
+              ...formData,
+              estimatedFunding: parseFloat(e.target.value),
+            })
           }
           placeholder="Enter funding goal in USD"
         />

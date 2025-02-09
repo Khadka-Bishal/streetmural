@@ -11,7 +11,7 @@ async function main() {
 
   
     // Get the contract factory for your StreetMural contract
-    const StreetMuralFactory = await ethers.getContractFactory("StreetMural");
+    const StreetMuralFactory = await ethers.getContractFactory("MuralDAO");
   
     // Deploy the contract; if your constructor requires parameters, pass them here.
     const streetMural = await StreetMuralFactory.deploy();

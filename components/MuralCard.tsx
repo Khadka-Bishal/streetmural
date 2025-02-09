@@ -1,4 +1,4 @@
-import { getMuralDAOContract } from '@/lib/contract';
+import { getMuralDAOContract } from '@/lib/ethers';
 import { toast } from 'react-hot-toast';
 
 export default function MuralCard({ mural, projectId }) {
